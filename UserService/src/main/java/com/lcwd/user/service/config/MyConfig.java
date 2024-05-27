@@ -1,6 +1,7 @@
 package com.lcwd.user.service.config;
 
 import com.lcwd.user.service.config.interceptor.RestTemplateInterceptors;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,12 +19,20 @@ import java.util.List;
 
 @Configuration
 public class MyConfig {
+
+    @Autowired
+    private ClientRegistrationRepository clientRegistrationRepository;
+    @Autowired
+    private OAuth2AuthorizedClientRepository auth2AuthorizedClientRepository;
+
     @Bean
     @LoadBalanced
     public RestTemplate restTemplate() {
         RestTemplate restTemplate = new RestTemplate();
         List<ClientHttpRequestInterceptor> interceptors = new ArrayList<>();
-        interceptors.add(new RestTemplateInterceptors());
+        interceptors.add(new RestTemplateInterceptors(manager(
+                clientRegistrationRepository, auth2AuthorizedClientRepository
+        )));
         restTemplate.setInterceptors(interceptors);
         return restTemplate;
     }
