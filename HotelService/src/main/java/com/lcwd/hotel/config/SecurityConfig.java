@@ -14,8 +14,17 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity security) throws Exception {
-        security.authorizeHttpRequests(authorizeRequest ->
-                authorizeRequest.anyRequest().authenticated()).oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(Customizer.withDefaults()));
+        security
+                .authorizeHttpRequests(authorizeRequests -> {
+                            authorizeRequests
+                                    .requestMatchers("/hotel/**").permitAll()  // Allow access to this POST endpoint
+                                    .requestMatchers("/hotel/**").permitAll()   // Allow access to this GET endpoint
+                                    .anyRequest().authenticated();
+                        }                      // Secure all other endpoints
+                )
+                .oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer
+                        .jwt(Customizer.withDefaults())
+                );
 
         return security.build();
     }

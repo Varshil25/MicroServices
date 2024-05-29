@@ -1,5 +1,6 @@
 package com.lcwd.user.service.services.impl;
 
+import com.lcwd.user.service.DTO.UserDTO;
 import com.lcwd.user.service.entities.Hotel;
 import com.lcwd.user.service.entities.Rating;
 import com.lcwd.user.service.entities.User;
@@ -7,6 +8,8 @@ import com.lcwd.user.service.exceptions.ResourceNotFoundException;
 import com.lcwd.user.service.external.services.HotelService;
 import com.lcwd.user.service.repositories.UserRepository;
 import com.lcwd.user.service.services.UserService;
+import jakarta.transaction.Transactional;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +31,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private HotelService hotelService;
+
+    @Autowired
+    private ModelMapper modelMapper;
 
     private Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
@@ -76,13 +79,21 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll();
     }
 
+    @Transactional
     @Override
-    public User updateUser(User user) {
-        return null;
+    public User updateUser(String userId, UserDTO userDTO) {
+        Optional<User> optionalUser = userRepository.findUserById(userId);
+        if (optionalUser.isPresent()) {
+            User existingUser = optionalUser.get();
+            modelMapper.map(userDTO, existingUser);
+            return userRepository.save(existingUser);
+        } else {
+            throw new RuntimeException("User with this id not found: " + userId);
+        }
     }
 
     @Override
     public void deleteUser(String userId) {
-
+        userRepository.deleteById(userId);
     }
 }

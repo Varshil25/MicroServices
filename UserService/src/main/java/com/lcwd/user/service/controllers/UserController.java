@@ -1,5 +1,6 @@
 package com.lcwd.user.service.controllers;
 
+import com.lcwd.user.service.DTO.UserDTO;
 import com.lcwd.user.service.entities.User;
 import com.lcwd.user.service.services.UserService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -63,4 +64,15 @@ public class UserController {
            return ResponseEntity.ok(allUsers);
     }
 
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> deleteUser(@PathVariable String userId) {
+        userService.deleteUser(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/update/{userId}")
+    public ResponseEntity<User> updateUser(@PathVariable("userId") String userId, @RequestBody UserDTO userDTO) {
+        User updatedUser = userService.updateUser(userId, userDTO);
+        return ResponseEntity.ok(updatedUser);
+    }
 }
