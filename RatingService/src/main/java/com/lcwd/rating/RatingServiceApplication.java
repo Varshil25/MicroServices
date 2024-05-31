@@ -16,13 +16,5 @@ public class RatingServiceApplication {
 		SpringApplication.run(RatingServiceApplication.class, args);
 	}
 
-	@Bean
-	public ModelMapper getModelMapper() {
-		ModelMapper modelMapper = new ModelMapper();
-        modelMapper.getConfiguration()
-                .setPropertyCondition(Conditions.isNotNull())
-                .setFieldMatchingEnabled(true)
-                .setFieldAccessLevel(Configuration.AccessLevel.PRIVATE);
-        return modelMapper;
-	}
+
 }

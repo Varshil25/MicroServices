@@ -1,6 +1,5 @@
 package com.lcwd.rating.services.Impl;
 
-import com.lcwd.rating.DTO.RatingDTO;
 import com.lcwd.rating.entities.Rating;
 import com.lcwd.rating.repositories.RatingRepository;
 import com.lcwd.rating.services.RatingService;
@@ -40,15 +39,5 @@ public class RatingServiceImpl implements RatingService {
         return ratingRepository.findByHotelId(hotelId);
     }
 
-    @Override
-    public Rating updateRating(String ratingId, RatingDTO ratingDTO) {
-        Optional<Rating> optionalRating = ratingRepository.findByRatingId(ratingId);
-        if (optionalRating.isPresent()) {
-            Rating existingRating = optionalRating.get();
-            modelMapper.map(ratingDTO, existingRating);
-            return ratingRepository.save(existingRating);
-        }else {
-            throw new RuntimeException("User with this id not found: " + ratingId);
-        }
-    }
+
 }

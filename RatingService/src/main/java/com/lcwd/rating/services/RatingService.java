@@ -1,6 +1,6 @@
 package com.lcwd.rating.services;
 
-import com.lcwd.rating.DTO.RatingDTO;
+
 import com.lcwd.rating.entities.Rating;
 
 import java.util.List;
@@ -18,6 +18,5 @@ public interface RatingService {
     // get all by hotel
     List<Rating> getRatingsByHotelId(String hotelId);
 
-    // Update rating
-    Rating updateRating(String ratingId, RatingDTO ratingDTO);
+
 }

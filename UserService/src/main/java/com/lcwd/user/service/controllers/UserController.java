@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,19 +25,20 @@ public class UserController {
 
     private Logger logger = LoggerFactory.getLogger(UserController.class);
 
-//    craate user
+    //    craate user
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User user) {
         User user1 = userService.saveUser(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(user1);
     }
 
-//    single user get
+    //    single user get
     int retryCount = 1;
+
     @GetMapping(value = "/{userId}")
 //    @CircuitBreaker(name = "" +"" , fallbackMethod = "ratingHotelFallback")
 //    @Retry(name="ratingHotelService" , fallbackMethod = "ratingHotelFallback")
-    @RateLimiter(name="userRatingLimiter" , fallbackMethod = "ratingHotelFallback")
+    @RateLimiter(name = "userRatingLimiter", fallbackMethod = "ratingHotelFallback")
     public ResponseEntity<User> getSingleUser(@PathVariable String userId) {
         logger.info("retryCount : {}" + retryCount);
         retryCount++;
@@ -47,21 +49,21 @@ public class UserController {
     // rating fallback method for circuit breaker
     public ResponseEntity<User> ratingHotelFallback(String userId, Exception ex) {
         logger.info("fallback is expected because service is down : " + ex.getMessage());
-        User user =  User.builder().
+        User user = User.builder().
                 email("dummy@gmail.com").
                 name("dummy").
                 about("This user is created dummy beacuse some services is down").
                 userId("123456").
                 build();
-        return  new ResponseEntity<>(user, HttpStatus.OK);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-//    all users get
-
+    //    all users get
+    @PreAuthorize("hasAuthority('normal')")
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers(){
-           List<User> allUsers = userService.getAllUsers();
-           return ResponseEntity.ok(allUsers);
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> allUsers = userService.getAllUsers();
+        return ResponseEntity.ok(allUsers);
     }
 
     @DeleteMapping("/{userId}")

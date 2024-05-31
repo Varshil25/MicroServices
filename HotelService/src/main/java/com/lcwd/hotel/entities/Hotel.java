@@ -1,17 +1,13 @@
 package com.lcwd.hotel.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "hotels")
 public class Hotel {
@@ -21,4 +17,5 @@ public class Hotel {
     private String location;
     private String about;
 
+    private String filePath;
 }

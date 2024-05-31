@@ -1,6 +1,5 @@
 package com.lcwd.rating.controller;
 
-import com.lcwd.rating.DTO.RatingDTO;
 import com.lcwd.rating.entities.Rating;
 import com.lcwd.rating.services.RatingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,9 +43,5 @@ public class RatingController {
         return ResponseEntity.ok(ratingService.getRatingsByHotelId(hotelId));
     }
 
-    @PutMapping("/update/{ratingId}")
-    public ResponseEntity<Rating> getRatingByHotelId(@PathVariable String ratingId, @RequestBody RatingDTO ratingDTO) {
-        Rating updateRating = ratingService.updateRating(ratingId, ratingDTO);
-        return ResponseEntity.ok(updateRating);
-    }
+
 }
