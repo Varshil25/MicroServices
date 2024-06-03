@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
@@ -38,7 +39,18 @@ public class HotelServiceImpl implements HotelService {
 
     @Override
     public Hotel create(Hotel hotel) {
-        return hotelRepository.save(hotel);
+        String hotelId = UUID.randomUUID().toString();
+        System.out.println(hotelId);
+        hotel.setId(hotelId);
+        Hotel savedHotel = hotelRepository.save(hotel);
+        String path = "";
+        try {
+            path = this.uploadImageToFileSystem(hotel.getImage(), savedHotel.getId());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        savedHotel.setFilePath(path);
+        return savedHotel;
     }
 
     @Override
@@ -91,25 +103,35 @@ public class HotelServiceImpl implements HotelService {
 //    }
 
     @Override
-    public String uploadImageToFileSystem(MultipartFile file) throws IOException {
+    public String uploadImageToFileSystem(MultipartFile file, String hotelId) throws IOException {
+        Hotel hotel = hotelRepository.findHotelById(hotelId).orElseThrow(() -> new ResourceNotFoundException());
         String filePath = FOLDER_PATH + file.getOriginalFilename();
-        Hotel hotel = hotelRepository.save(Hotel.builder().filePath(filePath).build()); // meta data for filepath
+        File dir = new File(FOLDER_PATH);
+        if (!dir.exists()) {
+            dir.mkdirs(); // Create directory if it doesn't exist
+        }
         file.transferTo(new File(filePath));
 
-        if (hotel != null) {
-            return "file upload successfully" + filePath;
-        }
-        return null;
-    }
+//        Hotel hotel = new Hotel();
+//        hotel.setId(UUID.randomUUID().toString()); // Ensure ID is set if not set in constructor
+        hotel.setFilePath(filePath);
+        hotelRepository.save(hotel);
 
+        return filePath;
+    }
 
 
     @Override
     public byte[] downloadImageFromFileSystem(String fileName) throws IOException {
-        Optional<Hotel> imageData = hotelRepository.findByName(fileName);
-        String filePath = imageData.get().getFilePath();
-        byte[] images = Files.readAllBytes(new File(filePath).toPath());
-        return images;
+        Optional<Hotel> hotelData = hotelRepository.findByFilePath(FOLDER_PATH + fileName);
+        if (hotelData.isPresent()) {
+            Path path = Paths.get(hotelData.get().getFilePath());
+            return Files.readAllBytes(path);
+        } else {
+            throw new IOException("File not found: " + fileName);
+        }
     }
+
+
 
 }

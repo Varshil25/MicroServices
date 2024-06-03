@@ -20,13 +20,11 @@ public class HotelController {
     @Autowired
     private HotelService hotelService;
 
-    @Value("${project.image}")
-    private String path;
 
     // create
     //  @PreAuthorize("hasAuthority('Admin')")
     @PostMapping
-    public ResponseEntity<Hotel> createHotel(@RequestBody Hotel hotel) {
+    public ResponseEntity<Hotel> createHotel(@ModelAttribute Hotel hotel) {
         return ResponseEntity.status(HttpStatus.CREATED).body(hotelService.create(hotel));
     }
 
@@ -56,17 +54,16 @@ public class HotelController {
         return ResponseEntity.ok(updateHotel);
     }
 
-    @PostMapping("/fileSystem")
-    public ResponseEntity<?> uploadImageTOFileSystem(@RequestParam("image") MultipartFile file) throws IOException {
-        String uploadImage = hotelService.uploadImageToFileSystem(file);
-        return ResponseEntity.status(HttpStatus.OK).body(uploadImage);
+    @PostMapping("/upload/{hotelId}")
+    public ResponseEntity<?> uploadImageToFileSystem(@PathVariable String hotelId, @RequestParam("image") MultipartFile file) throws IOException {
+        String uploadImageResponse = hotelService.uploadImageToFileSystem(file, hotelId);
+        return ResponseEntity.status(HttpStatus.OK).body(uploadImageResponse);
     }
 
-    @GetMapping("/fileSyste/{fileName}")
+    @GetMapping("/download/{fileName}")
     public ResponseEntity<?> downloadImageFromFileSystem(@PathVariable String fileName) throws IOException {
-        byte[] imageDate = hotelService.downloadImageFromFileSystem(fileName);
+        byte[] imageData = hotelService.downloadImageFromFileSystem(fileName);
         return ResponseEntity.status(HttpStatus.OK)
-                .contentType(MediaType.valueOf("/image/png"))
-                .body(imageDate);
+                .body(imageData);
     }
 }

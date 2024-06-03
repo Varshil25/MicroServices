@@ -25,8 +25,9 @@ public interface HotelService {
     void delete(String id);
 
 //    post Image
-    String uploadImageToFileSystem(MultipartFile file) throws IOException;
+    String uploadImageToFileSystem(MultipartFile file, String hotelId) throws IOException;
 
 //    get Image
     byte[] downloadImageFromFileSystem(String fileName) throws IOException;
+
 }

@@ -16,11 +16,6 @@ spring:
     import: optional:configserver:http://localhost:8085
 
      # Images Realated Configration
-  servlet:
-    multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
-      enabled: true
 
 
 
