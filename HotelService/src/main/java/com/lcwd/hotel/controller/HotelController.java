@@ -4,12 +4,11 @@ import com.lcwd.hotel.DTO.HotelDTO;
 import com.lcwd.hotel.entities.Hotel;
 import com.lcwd.hotel.services.HotelService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.List;
@@ -17,9 +16,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/hotels")
 public class HotelController {
+
     @Autowired
     private HotelService hotelService;
-
 
     // create
     //  @PreAuthorize("hasAuthority('Admin')")
@@ -57,8 +56,11 @@ public class HotelController {
     @PostMapping("/upload/{hotelId}")
     public ResponseEntity<?> uploadImageToFileSystem(@PathVariable String hotelId, @RequestParam("image") MultipartFile file) throws IOException {
         String uploadImageResponse = hotelService.uploadImageToFileSystem(file, hotelId);
-        return ResponseEntity.status(HttpStatus.OK).body(uploadImageResponse);
+        String imageUrl = ServletUriComponentsBuilder.fromCurrentContextPath().path("/images/").path(file.getOriginalFilename()).toUriString();
+        return ResponseEntity.ok(imageUrl);
     }
+
+
 
     @GetMapping("/download/{fileName}")
     public ResponseEntity<?> downloadImageFromFileSystem(@PathVariable String fileName) throws IOException {
