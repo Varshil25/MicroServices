@@ -27,6 +27,7 @@ public class HotelServiceImpl implements HotelService {
     @Autowired
     private HotelRepository hotelRepository;
 
+<<<<<<< HEAD
 
     @Autowired
     private ModelMapper modelMapper;
@@ -35,6 +36,13 @@ public class HotelServiceImpl implements HotelService {
 
     public HotelServiceImpl() throws IOException {
     }
+=======
+    @Autowired
+    private ModelMapper modelMapper;
+
+    public final String FOLDER_PATH = "/home/varshil/Desktop/MicroServices/HotelService/src/main/resources/static/images";
+
+>>>>>>> 64e6537 (init')
 
     @Override
     public Hotel create(Hotel hotel) {

@@ -56,8 +56,13 @@ public class HotelController {
     @PostMapping("/upload/{hotelId}")
     public ResponseEntity<?> uploadImageToFileSystem(@PathVariable String hotelId, @RequestParam("image") MultipartFile file) throws IOException {
         String uploadImageResponse = hotelService.uploadImageToFileSystem(file, hotelId);
+<<<<<<< HEAD
         String imageUrl = ServletUriComponentsBuilder.fromCurrentContextPath().path("/images/").path(file.getOriginalFilename()).toUriString();
         return ResponseEntity.ok(imageUrl);
+=======
+        String uploadPath = ServletUriComponentsBuilder.fromCurrentContextPath().path("/images/").toUriString();
+        return ResponseEntity.ok(uploadPath);
+>>>>>>> 64e6537 (init')
     }
 
 
@@ -65,7 +70,9 @@ public class HotelController {
     @GetMapping("/download/{fileName}")
     public ResponseEntity<?> downloadImageFromFileSystem(@PathVariable String fileName) throws IOException {
         byte[] imageData = hotelService.downloadImageFromFileSystem(fileName);
+        String downloadPath = ServletUriComponentsBuilder.fromCurrentContextPath().path("/images/").path(fileName).toUriString();
         return ResponseEntity.status(HttpStatus.OK)
+                .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
                 .body(imageData);
     }
 }
