@@ -2,7 +2,6 @@ package com.lcwd.hotel.services;
 
 import com.lcwd.hotel.DTO.HotelDTO;
 import com.lcwd.hotel.entities.Hotel;
-import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -10,7 +9,7 @@ import java.util.List;
 
 public interface HotelService {
     // create
-    Hotel create(Hotel hotel);
+    Hotel create(Hotel hotel, MultipartFile image) throws IOException;
 
 //    getall
     List<Hotel> getAll();
@@ -24,10 +23,6 @@ public interface HotelService {
 //    Delete Hotel by id
     void delete(String id);
 
-//    post Image
-    String uploadImageToFileSystem(MultipartFile file, String hotelId) throws IOException;
-
-//    get Image
     byte[] downloadImageFromFileSystem(String fileName) throws IOException;
 
 }

@@ -16,7 +16,11 @@ spring:
     import: optional:configserver:http://localhost:8085
 
      # Images Realated Configration
-
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 300MB
+      file-size-threshold: 1KB
 
 
 #eureka:
