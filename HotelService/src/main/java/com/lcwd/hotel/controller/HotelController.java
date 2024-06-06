@@ -4,7 +4,6 @@ import com.lcwd.hotel.DTO.HotelDTO;
 import com.lcwd.hotel.entities.Hotel;
 import com.lcwd.hotel.helper.ImageUploadHelper;
 import com.lcwd.hotel.services.HotelService;
-import org.apache.tomcat.util.http.fileupload.FileUpload;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -21,6 +20,8 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -40,8 +41,8 @@ public class HotelController {
     // create
     //  @PreAuthorize("hasAuthority('Admin')")
     @PostMapping
-    public ResponseEntity<Hotel> create(@ModelAttribute Hotel hotel, @RequestParam("image") MultipartFile image) throws IOException {
-        return ResponseEntity.status(HttpStatus.CREATED).body(hotelService.create(hotel, image));
+    public ResponseEntity<Hotel> create(@ModelAttribute Hotel hotel, @RequestParam("images") MultipartFile[] images) throws IOException {
+        return ResponseEntity.status(HttpStatus.CREATED).body(hotelService.create(hotel, images));
     }
 
 
@@ -71,78 +72,49 @@ public class HotelController {
         return ResponseEntity.ok(updateHotel);
     }
 
-<<<<<<< HEAD
-    @PostMapping("/upload/{hotelId}")
-    public ResponseEntity<?> uploadImageToFileSystem(@PathVariable String hotelId, @RequestParam("image") MultipartFile file) throws IOException {
-        String uploadImageResponse = hotelService.uploadImageToFileSystem(file, hotelId);
-<<<<<<< HEAD
-        String imageUrl = ServletUriComponentsBuilder.fromCurrentContextPath().path("/images/").path(file.getOriginalFilename()).toUriString();
-        return ResponseEntity.ok(imageUrl);
-=======
-        String uploadPath = ServletUriComponentsBuilder.fromCurrentContextPath().path("/images/").toUriString();
-        return ResponseEntity.ok(uploadPath);
->>>>>>> 64e6537 (init')
-    }
-
-
-
-    @GetMapping("/download/{fileName}")
-    public ResponseEntity<?> downloadImageFromFileSystem(@PathVariable String fileName) throws IOException {
-        byte[] imageData = hotelService.downloadImageFromFileSystem(fileName);
-        String downloadPath = ServletUriComponentsBuilder.fromCurrentContextPath().path("/images/").path(fileName).toUriString();
-        return ResponseEntity.status(HttpStatus.OK)
-                .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
-                .body(imageData);
-=======
-    @PostMapping("/image")
-    public ResponseEntity<String> uploadFile(@RequestParam("image") MultipartFile image) {
+    @PostMapping("/images")
+    public ResponseEntity<String> uploadFile(@RequestParam("images") MultipartFile[] images) {
         try {
-            if (image.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Request must contain an image");
+            if (Arrays.stream(images).allMatch(MultipartFile::isEmpty)) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("No images provided");
             }
 
-            if (!image.getContentType().equals("image/jpeg")) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Only JPEG content allowed!");
+            for (MultipartFile image : images) {
+                if (image.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("No images provided");
+                }
+                if (!image.getContentType().equals("image/jpeg")) {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Only JPEG content allowed!");
+                }
             }
 
-            String filePath = imageUploadHelper.uploadImage(image);
-            if (filePath != null) {
-                return ResponseEntity.ok(ServletUriComponentsBuilder.fromCurrentContextPath().path("/image/").path(filePath).toUriString());
+            StringBuilder urlBuilder = new StringBuilder();
+
+            for (MultipartFile multipartFile : images) {
+                try {
+                    String filePath = imageUploadHelper.uploadImage(multipartFile);
+                    if (filePath != null) {
+                        String fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                                .path("/image/")
+                                .path(filePath)
+                                .toUriString();
+                        urlBuilder.append(fileUrl).append("\n");
+                    }
+                } catch (Exception e) {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something went wrong. Try again");
+                }
             }
 
-//            String filePath = imageUploadHelper.uploadImage(image);
-//            if (filePath != null) {
-//                return ResponseEntity.ok()
-//                        .header("Content-Disposition", "attachment; filename=\"" + filePath + "\"")
-//                        .body("Image uploaded successfully");
-//            }
+            if (urlBuilder.length() > 0) {
+                return ResponseEntity.ok(urlBuilder.toString());
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something went wrong. Try again");
+            }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something went wrong. Try again");
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something went wrong! Try again");
     }
-
-    // HotelController
-//    @GetMapping("/image/{fileName}")
-//    public ResponseEntity<byte[]> getImage(@PathVariable String fileName) throws IOException {
-//        try {
-//            byte[] images = Files.readAllBytes(new File(fileName).toPath());
-//            return ResponseEntity.ok(images);
-//        } catch (IOException e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new byte[0]);
-//        }
-//    }
-
-//    @GetMapping("/image/{fileName}")
-//    public ResponseEntity<byte[]> serveImage(@PathVariable String fileName) {
-//        try {
-//            byte[] images = Files.readAllBytes(new File(fileName).toPath());
-//            return ResponseEntity.ok(images);
-//        } catch (IOException e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new byte[0]);
-//        }
-//    }
 
     @GetMapping("/image/{filename:.+}")
     public ResponseEntity<Resource> getImage(@PathVariable String filename) {
@@ -159,7 +131,7 @@ public class HotelController {
         } catch (MalformedURLException e) {
             return ResponseEntity.badRequest().build();
         }
->>>>>>> 59cb8b3 (init)
+
     }
 
 }

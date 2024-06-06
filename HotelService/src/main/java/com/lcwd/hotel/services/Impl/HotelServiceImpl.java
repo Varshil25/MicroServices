@@ -12,10 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,41 +28,43 @@ public class HotelServiceImpl implements HotelService {
     @Autowired
     private HotelRepository hotelRepository;
 
-<<<<<<< HEAD
-
     @Autowired
     private ModelMapper modelMapper;
 
-    public final String FOLDER_PATH = new ClassPathResource("static/images/").getFile().getAbsolutePath();
-
-    public HotelServiceImpl() throws IOException {
-    }
-=======
     @Autowired
     private ImageUploadHelper imageUploadHelper;
 
-    @Autowired
-    private ModelMapper modelMapper;
-
-
-<<<<<<< HEAD
->>>>>>> 64e6537 (init')
+    private String getFolderPath() throws IOException {
+        return new ClassPathResource("static/images/").getFile().getAbsolutePath();
+    }
 
     @Override
-    public Hotel create(Hotel hotel) {
-=======
-    public Hotel create(Hotel hotel, MultipartFile image) throws IOException {
->>>>>>> 59cb8b3 (init)
+    public Hotel create(Hotel hotel, MultipartFile[] images) throws IOException {
         String hotelId = UUID.randomUUID().toString();
         hotel.setId(hotelId);
-        String filePath = imageUploadHelper.uploadImage(image);
-        hotel.setFilePath("localhost:8082/image/" + filePath);
+
+        List<String> filePaths = new ArrayList<>();
+
+        for (MultipartFile image : images) {
+            String filePath = imageUploadHelper.uploadImage(image);
+            if (filePath != null) {
+                String fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                        .path("/image/")
+                        .path(filePath)
+                        .toUriString();
+                hotel.getFilePath().add(fileUrl);
+            }
+        }
         return hotelRepository.save(hotel);
     }
 
     @Override
     public List<Hotel> getAll() {
-        return hotelRepository.findAll();
+        List<Hotel> hotels = hotelRepository.findAll();
+        if (hotels.isEmpty()) {
+            throw new ResourceNotFoundException("No hotels found");
+        }
+        return hotels;
     }
 
     @Override
@@ -88,13 +92,10 @@ public class HotelServiceImpl implements HotelService {
 
     @Override
     public byte[] downloadImageFromFileSystem(String fileName) throws IOException {
-       Optional<Hotel> hotel = hotelRepository.findByName(fileName);
-       String filePath = hotel.get().getFilePath();
-       byte[] images = Files.readAllBytes(new File(filePath).toPath());
-       return images;
+        Optional<Hotel> hotel = hotelRepository.findByName(fileName);
+        List<String> filePath = hotel.get().getFilePath();
+        byte[] images = Files.readAllBytes(new File(String.valueOf(filePath)).toPath());
+        return images;
     }
-
-
-
 
 }

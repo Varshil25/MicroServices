@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface HotelService {
     // create
-    Hotel create(Hotel hotel, MultipartFile image) throws IOException;
+    Hotel create(Hotel hotel, MultipartFile[] images) throws IOException;
 
 //    getall
     List<Hotel> getAll();

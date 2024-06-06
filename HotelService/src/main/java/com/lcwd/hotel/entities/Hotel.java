@@ -3,6 +3,9 @@ package com.lcwd.hotel.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,5 +21,5 @@ public class Hotel {
     private String location;
     private String about;
 
-    private String filePath;
+    private List<String> filePath = new ArrayList<>();
 }
