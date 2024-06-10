@@ -11,17 +11,21 @@ public interface HotelService {
     // create
     Hotel create(Hotel hotel, MultipartFile[] images) throws IOException;
 
-//    getall
+    //    getall
     List<Hotel> getAll();
 
     // get single
     Hotel get(String id);
 
     // Update Hotel by id
-    Hotel updateHotel(String id, HotelDTO hotelDTO);
+    public Hotel updateHotel(String id, String name, String location, String about, MultipartFile[] images) throws IOException ;
 
-//    Delete Hotel by id
+    //    Delete Hotel by id
     void delete(String id);
+
+    //    Delete Image using HotelId and ImagePath
+    void deleteImage(String id, String[] imagePaths);
+
 
     byte[] downloadImageFromFileSystem(String fileName) throws IOException;
 

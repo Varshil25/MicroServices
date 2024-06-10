@@ -17,6 +17,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +29,7 @@ public class HotelServiceImpl implements HotelService {
 
     @Autowired
     private HotelRepository hotelRepository;
+
 
     @Autowired
     private ModelMapper modelMapper;
@@ -64,6 +67,9 @@ public class HotelServiceImpl implements HotelService {
         if (hotels.isEmpty()) {
             throw new ResourceNotFoundException("No hotels found");
         }
+        for (Hotel hotel : hotels) {
+            hotel.getFilePath().removeIf(filePath -> Files.exists(Paths.get(filePath)));
+        }
         return hotels;
     }
 
@@ -74,21 +80,74 @@ public class HotelServiceImpl implements HotelService {
 
     @Transactional
     @Override
-    public Hotel updateHotel(String id, HotelDTO hotelDTO) {
+    public Hotel updateHotel(String id, String name, String location, String about, MultipartFile[] images) throws IOException {
         Optional<Hotel> optionalHotel = hotelRepository.findHotelById(id);
         if (optionalHotel.isPresent()) {
             Hotel existingHotel = optionalHotel.get();
-            modelMapper.map(hotelDTO, existingHotel);
+
+            // Update name, location, and about
+            if (name != null && !name.isEmpty()) {
+                existingHotel.setName(name);
+            }
+            if (location != null && !location.isEmpty()) {
+                existingHotel.setLocation(location);
+            }
+            if (about != null && !about.isEmpty()) {
+                existingHotel.setAbout(about);
+            }
+
+            // Update images
+            if (images != null && images.length > 0) {
+                List<String> newFilePaths = new ArrayList<>();
+                for (MultipartFile image : images) {
+                    String filePath = imageUploadHelper.uploadImage(image);
+                    if (filePath != null) {
+                        String fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                                .path("/image/")
+                                .path(filePath)
+                                .toUriString();
+                        newFilePaths.add(fileUrl);
+                    }
+                }
+                existingHotel.setFilePath(newFilePaths);
+            }
+
             return hotelRepository.save(existingHotel);
         } else {
             throw new ResourceNotFoundException("Hotel with given id is not found" + id);
         }
     }
 
+
     @Override
     public void delete(String id) {
         hotelRepository.deleteById(id);
     }
+
+    @Override
+    public void deleteImage(String id, String[] imagePaths) {
+        Hotel hotel = hotelRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Hotel with given id is not found"));
+        List<String> filePaths = new ArrayList<String>(hotel.getFilePath());
+        for (String imagePath : imagePaths) {
+            filePaths.remove(imagePath);
+        }
+
+        for (String imagePath : imagePaths) {
+            Path path = Paths.get("/home/varshil/Desktop/MicroServices/HotelService/target/classes/static/image/" + imagePath);
+            String dbpath="http://localhost:8082/image/"+imagePath;
+            List<String> list=hotel.getFilePath();
+            list.remove(dbpath);
+            hotel.setFilePath(list);
+
+            hotelRepository.save(hotel);
+            try {
+                Files.deleteIfExists(path);
+            } catch (IOException e) {
+                System.out.println("Error caught: " + e.getMessage());
+            }
+        }
+    }
+
 
     @Override
     public byte[] downloadImageFromFileSystem(String fileName) throws IOException {

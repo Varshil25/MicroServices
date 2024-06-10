@@ -60,17 +60,31 @@ public class HotelController {
         return ResponseEntity.ok(hotelService.getAll());
     }
 
+//    Delete the hotel using Id
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteHotel(@PathVariable String id) {
         hotelService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<Hotel> updateHotel(@PathVariable("id") String id, @RequestBody HotelDTO hotelDTO) {
-        Hotel updateHotel = hotelService.updateHotel(id, hotelDTO);
-        return ResponseEntity.ok(updateHotel);
+    @PutMapping("update/{id}")
+    public ResponseEntity<Hotel> updateHotel(@PathVariable("id") String id, @RequestParam("name") String name,
+                                             @RequestParam("location") String location,
+                                             @RequestParam("about") String about,
+                                             @RequestParam("images") MultipartFile[] images) throws IOException {
+        Hotel updatedHotel = hotelService.updateHotel(id, name, location, about, images);
+        return ResponseEntity.ok(updatedHotel);
     }
+
+
+
+    //    Delete the image using HotelId and imagePath
+    @DeleteMapping("/{id}/{imagePaths}")
+    public ResponseEntity<Void> deleteImage(@PathVariable String id, @PathVariable String[] imagePaths){
+        hotelService.deleteImage(id, imagePaths);
+        return ResponseEntity.ok().build();
+    }
+
 
     @PostMapping("/images")
     public ResponseEntity<String> uploadFile(@RequestParam("images") MultipartFile[] images) {
@@ -135,5 +149,3 @@ public class HotelController {
     }
 
 }
-
-
